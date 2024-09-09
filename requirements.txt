@@ -1,0 +1,6 @@
+Django==3.2.18
+bcrypt==3.2.2
+psycopg2-binary==2.9.6  # Se estiver usando PostgreSQL
+python-dotenv==0.21.0
+asgiref==3.6.0
+sqlparse==0.4.2
