@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frequências</title>
+</head>
+<body>
+    <h1>Frequências do Mês</h1>
+    
+    <form method="GET" action="">
+        <label for="mes">Selecionar Mês:</label>
+        <input type="text" name="mes" id="mes" value="{{ mes }}">
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Bolsista</th>
+                <th>Mês</th>
+                <th>Frequência Entregue</th>
+                <th>Frequência Participantes Entregue</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for frequencia in frequencias %}
+            <tr>
+                <td>{{ frequencia.bolsista.nome }}</td>
+                <td>{{ frequencia.mes }}</td>
+                <td>{{ frequencia.frequencia_entregue }}</td>
+                <td>{{ frequencia.frequencia_participantes_entregue }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
