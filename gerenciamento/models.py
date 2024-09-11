@@ -36,6 +36,11 @@ TURNO_CHOICES = [
     ('TARDE','Tarde'),
     ('NOITE','Noite'),
 ]
+SEXO_CHOICES = [
+    ('MASCULINO' , 'Masculino'),
+    ('FEMININO' , 'Feminino'),
+    ('OUTROS' , 'Outros'),
+]
 
 # Modelo Bolsista
 class Bolsista(models.Model):
@@ -52,6 +57,7 @@ class Bolsista(models.Model):
 # Modelo Participante
 class Participante(models.Model):
     nome = models.CharField(max_length=100)
+    sexo = models.CharField(max_length=30, choices=SEXO_CHOICES)
     turno = models.CharField(max_length=50, choices=TURNO_CHOICES, verbose_name="Turno disponível para treino")
     competidor = models.BooleanField(default=False)
     carga_horaria = models.IntegerField()
