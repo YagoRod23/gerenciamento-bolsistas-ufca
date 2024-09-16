@@ -7,6 +7,13 @@ class Modalidade(models.TextChoices):
     VOLEI = 'Vôlei', 'Vôlei'
     ATLETISMO = 'Atletismo', 'Atletismo'
 
+
+# Lista de sexo disponivel
+SEXO_CHOICES = [
+    ('MASCULINO', 'Masculino'),
+    ('FEMININO' , 'Feminino'),
+    ('OUTROS' , 'Outros'),
+]
 # Lista de cursos disponíveis
 CURSO_CHOICES = [
     ('ADM', 'Administração'),
@@ -59,6 +66,7 @@ class Participante(models.Model):
     curso = models.CharField(max_length=50, choices=CURSO_CHOICES)
     semestre = models.IntegerField()
     modalidade = models.CharField(max_length=50, choices=Modalidade.choices)
+    sexo = models.CharField(max_length=30, choices=SEXO_CHOICES)
 
     def __str__(self):
         return self.nome
