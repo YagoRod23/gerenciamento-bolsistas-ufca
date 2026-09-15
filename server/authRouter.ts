@@ -1,16 +1,19 @@
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { hashPassword, verifyPassword } from "./auth";
+import { createCoordenadorSessionToken, SESSION_MAX_AGE_MS } from "./localSession";
+import { getSessionCookieOptions } from "./_core/cookies";
+import { COOKIE_NAME } from "@shared/const";
 
 export const authRouter = router({
   login: publicProcedure
     .input(z.object({ usuario: z.string(), senha: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { getCoordenadorByUsuario } = await import("./db");
-      
+
       const coordenador = await getCoordenadorByUsuario(input.usuario);
-      
+
       if (!coordenador) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
@@ -18,7 +21,7 @@ export const authRouter = router({
         });
       }
 
-      if (!verifyPassword(input.senha, coordenador.senha)) {
+      if (!(await verifyPassword(input.senha, coordenador.senha))) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Usuário ou senha inválidos",
@@ -32,8 +35,16 @@ export const authRouter = router({
         });
       }
 
-      // Aqui você pode gerar um token JWT ou sessão
-      // Por enquanto, retornamos os dados do coordenador
+      const sessionToken = await createCoordenadorSessionToken({
+        coordenadorId: coordenador.id,
+        usuario: coordenador.usuario,
+        nome: coordenador.nome,
+        isSuperAdmin: coordenador.isSuperAdmin === "true",
+      });
+
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: SESSION_MAX_AGE_MS });
+
       return {
         id: coordenador.id,
         nome: coordenador.nome,
@@ -43,8 +54,8 @@ export const authRouter = router({
       };
     }),
 
-  // Gerenciar coordenadores (apenas super admin)
-  listCoordenadores: publicProcedure.query(async () => {
+  // Gerenciar coordenadores (requer login)
+  listCoordenadores: protectedProcedure.query(async () => {
     const { getAllCoordenadores } = await import("./db");
     const coordenadores = await getAllCoordenadores();
     return coordenadores.map(c => ({
@@ -57,7 +68,7 @@ export const authRouter = router({
     }));
   }),
 
-  createCoordenador: publicProcedure
+  createCoordenador: protectedProcedure
     .input(z.object({
       nome: z.string(),
       usuario: z.string(),
@@ -67,9 +78,9 @@ export const authRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { createCoordenador: createCoordenadorDb } = await import("./db");
-      
-      const senhaHash = hashPassword(input.senha);
-      
+
+      const senhaHash = await hashPassword(input.senha);
+
       await createCoordenadorDb({
         nome: input.nome,
         usuario: input.usuario,
@@ -82,7 +93,7 @@ export const authRouter = router({
       return { success: true };
     }),
 
-  updateCoordenador: publicProcedure
+  updateCoordenador: protectedProcedure
     .input(z.object({
       id: z.number(),
       nome: z.string().optional(),
@@ -91,7 +102,7 @@ export const authRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { updateCoordenador: updateCoordenadorDb } = await import("./db");
-      
+
       const data: any = {};
       if (input.nome) data.nome = input.nome;
       if (input.email) data.email = input.email;
@@ -101,7 +112,7 @@ export const authRouter = router({
       return { success: true };
     }),
 
-  deleteCoordenador: publicProcedure
+  deleteCoordenador: protectedProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
       const { deleteCoordenador: deleteCoordenadorDb } = await import("./db");
@@ -109,45 +120,45 @@ export const authRouter = router({
       return { success: true };
     }),
 
-  alterarSenha: publicProcedure
+  alterarSenha: protectedProcedure
     .input(z.object({
       coordenadorId: z.number(),
       senhaAtual: z.string(),
       novaSenha: z.string(),
     }))
-    .mutation(async ({ input }) => {
-      const { getCoordenadorByUsuario } = await import("./db");
-      const { updateCoordenador: updateCoordenadorDb } = await import("./db");
-      
-      // Aqui você precisaria ter o coordenador autenticado
-      // Por enquanto, vamos validar a senha atual
+    .mutation(async ({ input, ctx }) => {
+      if (ctx.user.id !== input.coordenadorId && !ctx.user.isSuperAdmin) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Sem permissão para alterar esta senha" });
+      }
+
       const db = await import("./db").then(m => m.getDb());
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
       const { coordenadores } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      
+
       const coordenador = await db.select().from(coordenadores).where(eq(coordenadores.id, input.coordenadorId)).limit(1);
-      
+
       if (!coordenador[0]) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Coordenador não encontrado" });
       }
 
-      if (!verifyPassword(input.senhaAtual, coordenador[0].senha)) {
+      if (!(await verifyPassword(input.senhaAtual, coordenador[0].senha))) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "Senha atual inválida",
         });
       }
 
-      const novaSenhaHash = hashPassword(input.novaSenha);
+      const { updateCoordenador: updateCoordenadorDb } = await import("./db");
+      const novaSenhaHash = await hashPassword(input.novaSenha);
       await updateCoordenadorDb(input.coordenadorId, { senha: novaSenhaHash });
 
       return { success: true };
     }),
 
   // Vincular coordenador a projetos
-  linkCoordenadorToProjeto: publicProcedure
+  linkCoordenadorToProjeto: protectedProcedure
     .input(z.object({ coordenadorId: z.number(), projetoId: z.number() }))
     .mutation(async ({ input }) => {
       const { linkCoordenadorToProjeto: linkDb } = await import("./db");
@@ -155,7 +166,7 @@ export const authRouter = router({
       return { success: true };
     }),
 
-  unlinkCoordenadorFromProjeto: publicProcedure
+  unlinkCoordenadorFromProjeto: protectedProcedure
     .input(z.object({ coordenadorId: z.number(), projetoId: z.number() }))
     .mutation(async ({ input }) => {
       const { unlinkCoordenadorFromProjeto: unlinkDb } = await import("./db");
@@ -163,11 +174,10 @@ export const authRouter = router({
       return { success: true };
     }),
 
-  getProjetosByCoordenador: publicProcedure
+  getProjetosByCoordenador: protectedProcedure
     .input(z.object({ coordenadorId: z.number() }))
     .query(async ({ input }) => {
       const { getProjetosByCoordenador: getProjetosDb } = await import("./db");
       return await getProjetosDb(input.coordenadorId);
     }),
 });
-

@@ -1,8 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ReactNode } from "react";
-import { useLocation } from "wouter";
-import LoginPage from "@/pages/LoginPage";
+import Login from "@/pages/Login";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -10,7 +9,7 @@ interface ProtectedRouteProps {
 
 /**
  * Componente que protege rotas administrativas com autenticação obrigatória.
- * 
+ *
  * Comportamento:
  * - Se loading === true: exibe skeleton
  * - Se !isAuthenticated: exibe tela de login
@@ -18,7 +17,6 @@ interface ProtectedRouteProps {
  */
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, loading } = useAuth();
-  const [location] = useLocation();
 
   // Enquanto carrega, exibe skeleton
   if (loading) {
@@ -34,7 +32,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   // Se não está autenticado, exibe tela de login
   if (!isAuthenticated) {
-    return <LoginPage returnTo={location} />;
+    return <Login />;
   }
 
   // Se está autenticado, renderiza o conteúdo

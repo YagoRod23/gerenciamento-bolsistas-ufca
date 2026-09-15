@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { getLoginUrl } from "@/const";
 
 /**
  * Header público para a página de cronograma
@@ -8,8 +7,6 @@ import { getLoginUrl } from "@/const";
  * - Identidade visual UFCA: cor primária marrom #532B1D, destaque amarelo #F5BE56
  */
 export default function PublicHeader() {
-  const loginUrl = getLoginUrl();
-
   return (
     <header className="bg-primary text-primary-foreground shadow-md sticky top-0 z-50">
       <div className="container py-4 flex items-center justify-between">
@@ -25,7 +22,7 @@ export default function PublicHeader() {
 
         {/* Botão "Área Administrativa" à direita */}
         <Button
-          onClick={() => window.location.href = loginUrl}
+          onClick={() => window.location.href = "/login"}
           className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
         >
           Área Administrativa

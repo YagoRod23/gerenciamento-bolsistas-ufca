@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Router as WouterRouter, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
@@ -13,15 +13,15 @@ import Relatorios from "./pages/Relatorios";
 import Horarios from "./pages/Horarios";
 import RelatorioOcupacao from "./pages/RelatorioOcupacao";
 import CronogramaVisual from "./pages/CronogramaVisual";
-import LoginPage from "./pages/LoginPage";
+import Login from "./pages/Login";
 import GerenciadorCoordenadores from "./pages/GerenciadorCoordenadores";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-function Router() {
+function AppRoutes() {
   return (
     <Switch>
       {/* Rota de login */}
-      <Route path="/login" component={() => <LoginPage />} />
+      <Route path="/login" component={Login} />
 
       {/* Rota inicial: Cronograma pública (sem autenticação) */}
       <Route path="/" component={CronogramaVisual} />
@@ -104,6 +104,14 @@ function Router() {
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
+  );
+}
+
+function Router() {
+  return (
+    <WouterRouter base="/bolsistas">
+      <AppRoutes />
+    </WouterRouter>
   );
 }
 

@@ -282,6 +282,13 @@ export async function getCoordenadorByUsuario(usuario: string) {
   return result[0] || null;
 }
 
+export async function getCoordenadorById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(coordenadores).where(eq(coordenadores.id, id)).limit(1);
+  return result[0] || null;
+}
+
 export async function createCoordenador(data: InsertCoordenador) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

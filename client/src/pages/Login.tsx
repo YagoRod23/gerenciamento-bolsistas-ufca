@@ -13,11 +13,12 @@ export default function Login() {
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const utils = trpc.useUtils();
   const loginMutation = trpc.coordenadores.login.useMutation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!usuario.trim() || !senha.trim()) {
       toast.error("Preencha todos os campos");
       return;
@@ -25,13 +26,14 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const result = await loginMutation.mutateAsync({ usuario, senha });
-      
-      // Salvar dados do coordenador no localStorage
-      localStorage.setItem("coordenador", JSON.stringify(result));
-      
+      await loginMutation.mutateAsync({ usuario, senha });
+
+      // O login já cria o cookie de sessão httpOnly no server;
+      // só precisamos revalidar o auth.me para refletir o novo estado.
+      await utils.auth.me.invalidate();
+
       toast.success("Login realizado com sucesso!");
-      setLocation("/");
+      setLocation("/dashboard");
     } catch (error: any) {
       toast.error(error.message || "Erro ao fazer login");
     } finally {

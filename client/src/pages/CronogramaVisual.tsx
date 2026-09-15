@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Download, Printer } from "lucide-react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { getLoginUrl } from "@/const";
 
 const diasSemana = [
   { chave: "segunda", label: "Segunda-feira" },
@@ -248,7 +247,7 @@ export default function CronogramaVisual() {
             <h1 className="text-xl font-bold">UFCA · Bolsistas</h1>
           </div>
           <a
-            href={getLoginUrl()}
+            href="/login"
             className="bg-[#F5BE56] text-[#532B1D] px-4 py-2 rounded font-semibold hover:bg-yellow-400 transition"
           >
             Admin
