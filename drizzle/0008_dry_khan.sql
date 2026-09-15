@@ -1,1 +1,0 @@
-ALTER TABLE `horarios_previstos` ADD `local` varchar(255);

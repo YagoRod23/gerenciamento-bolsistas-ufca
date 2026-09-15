@@ -40,7 +40,10 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      // Em produção (build final), defina VITE_API_URL com a URL pública do
+      // backend no Render (ex.: https://gerenciamento-bolsistas-ufca.onrender.com).
+      // Sem essa variável, cai no caminho relativo "/api/trpc" (uso local/mesma origem).
+      url: `${import.meta.env.VITE_API_URL ?? ""}/api/trpc`,
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {

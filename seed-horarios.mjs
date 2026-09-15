@@ -1,25 +1,38 @@
-import mysql from "mysql2/promise";
+import "dotenv/config";
+import pg from "pg";
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+function toPg(sqlText) {
+  let i = 0;
+  return sqlText.replace(/\?/g, () => `$${++i}`);
+}
+
+async function run(sqlText, params = []) {
+  return pool.query(toPg(sqlText), params);
+}
 
 async function seedHorarios() {
-  let connection;
   try {
     console.log("Conectando ao banco de dados...");
-    connection = await mysql.createConnection(process.env.DATABASE_URL);
-    
+
     // Primeiro, verificar bolsistas existentes
     console.log("\nBuscando bolsistas existentes...");
-    const [bolsistas] = await connection.execute("SELECT id, nome FROM bolsistas LIMIT 10");
-    
+    const { rows: bolsistas } = await run("SELECT id, nome FROM bolsistas LIMIT 10");
+
     if (bolsistas.length === 0) {
       console.log("❌ Nenhum bolsista encontrado no banco de dados!");
       process.exit(1);
     }
-    
+
     console.log(`✓ Encontrados ${bolsistas.length} bolsistas:`);
     bolsistas.forEach(b => console.log(`  - ID: ${b.id}, Nome: ${b.nome}`));
-    
+
     console.log("\nInserindo dados de teste de horários...");
-    
+
     // Usar IDs reais dos bolsistas
     const bolsistaIds = bolsistas.map(b => b.id);
     const testHorarios = [
@@ -36,7 +49,7 @@ async function seedHorarios() {
         INSERT INTO horarios_previstos (bolsista_id, dia_semana, hora_inicio, hora_fim, local)
         VALUES (?, ?, ?, ?, ?)
       `;
-      await connection.execute(query, horario);
+      await run(query, horario);
       console.log(`✓ Inserido: Bolsista ${horario[0]} - ${horario[1]} ${horario[2]}-${horario[3]}`);
     }
 
@@ -46,9 +59,7 @@ async function seedHorarios() {
     console.error("❌ Erro:", error.message);
     process.exit(1);
   } finally {
-    if (connection) {
-      await connection.end();
-    }
+    await pool.end();
   }
 }
 

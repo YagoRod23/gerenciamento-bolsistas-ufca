@@ -32,7 +32,7 @@ pnpm install
 O projeto já vem configurado com as credenciais da Manus. Se você quiser rodar localmente com seu próprio banco de dados, crie um arquivo `.env` na raiz do projeto:
 
 ```env
-DATABASE_URL=sua_connection_string_mysql
+DATABASE_URL=sua_connection_string_postgresql   # ex.: Neon (postgresql://user:pass@host/db?sslmode=require)
 JWT_SECRET=seu_secret_aqui
 ```
 
@@ -70,12 +70,24 @@ sgb-simples/
 
 ## 🗄️ Banco de Dados
 
-O sistema usa **MySQL/TiDB** com as seguintes tabelas:
+O sistema usa **PostgreSQL** (hospedado no [Neon](https://neon.tech)) via Drizzle ORM, com as seguintes tabelas:
 
 - `projetos` - Projetos cadastrados
 - `bolsistas` - Bolsistas vinculados a projetos
 - `documentos` - Documentos enviados (frequências e relatórios)
-- `controle_pagamentos` - Controle de pagamentos mensais
+- `controlePagamentos` - Controle de pagamentos mensais
+- `horarios_previstos`, `coordenadores`, `coordenador_projetos`, `users`
+
+## 🌐 Deploy em Produção
+
+Este projeto é publicado em duas partes separadas:
+
+- **Backend (API)**: serviço Node no [Render](https://render.com), usando `render.yaml` (raiz do repo). Aponta para o mesmo `package.json` do repositório, mas builda só o bundle do servidor (não roda `vite build`). Depois do primeiro deploy, preencha `DATABASE_URL` manualmente em Render → Environment (o `render.yaml` marca essa variável como `sync: false` de propósito, para não versionar a credencial do banco).
+- **Frontend (client)**: build estático (`vite build`) publicado em `https://yagorodrigues.com.br`.
+
+Antes do build final do client, defina `VITE_API_URL` no `.env` com a URL pública do backend no Render (ex.: `https://gerenciamento-bolsistas-ufca.onrender.com`) — veja `client/src/main.tsx`. Sem essa variável, o client chama a API em caminho relativo (`/api/trpc`), o que só funciona se client e server estiverem na mesma origem.
+
+O CORS do backend (`server/_core/index.ts`) já libera `https://yagorodrigues.com.br` e qualquer `localhost`/`127.0.0.1` (desenvolvimento).
 
 ## 📤 Upload de Arquivos
 
@@ -85,7 +97,7 @@ Os arquivos PDF são armazenados em **S3 (Amazon)** através da API da Manus. A 
 
 - **Frontend**: React 19, TailwindCSS, shadcn/ui
 - **Backend**: Node.js, Express, tRPC
-- **Banco de Dados**: MySQL (via Drizzle ORM)
+- **Banco de Dados**: PostgreSQL / Neon (via Drizzle ORM)
 - **Armazenamento**: S3 (via Manus)
 
 ## 📊 Páginas Disponíveis

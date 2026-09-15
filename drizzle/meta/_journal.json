@@ -1,75 +1,12 @@
 {
   "version": "7",
-  "dialect": "mysql",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1761321089242,
-      "tag": "0000_amused_silverclaw",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1761321145727,
-      "tag": "0001_dusty_ares",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1761649017318,
-      "tag": "0002_powerful_shadowcat",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1761650362424,
-      "tag": "0003_white_tattoo",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1761660213379,
-      "tag": "0004_yummy_leper_queen",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1761660301816,
-      "tag": "0005_dark_callisto",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1761661484189,
-      "tag": "0006_reflective_darkhawk",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1762029671276,
-      "tag": "0007_flippant_ink",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1774613885225,
-      "tag": "0008_dry_khan",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "5",
-      "when": 1774614238853,
-      "tag": "0009_lowly_living_lightning",
+      "version": "7",
+      "when": 1789445086150,
+      "tag": "0000_nappy_agent_zero",
       "breakpoints": true
     }
   ]

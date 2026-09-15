@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -27,9 +28,28 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
+// Origens liberadas para acessar a API.
+// - https://yagorodrigues.com.br: front-end em produção.
+// - localhost/127.0.0.1 (qualquer porta): desenvolvimento local (Vite, etc).
+const ALLOWED_ORIGINS = ["https://yagorodrigues.com.br"];
+const LOCALHOST_ORIGIN_REGEX = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    // Requisições sem "origin" (ex.: curl, apps mobile, mesma origem) são permitidas.
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || LOCALHOST_ORIGIN_REGEX.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origem não permitida: ${origin}`));
+    }
+  },
+  credentials: true,
+};
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  app.use(cors(corsOptions));
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

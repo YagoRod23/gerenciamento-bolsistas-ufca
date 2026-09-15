@@ -1,0 +1,23 @@
+# Render Blueprint — Web Service para o backend (server/) deste repositório.
+#
+# O client (Vite/React) é publicado separadamente em https://yagorodrigues.com.br
+# e não é servido por este serviço — por isso o build aqui roda só o bundle do
+# servidor (esbuild), sem o `vite build` do client.
+#
+# O repositório usa pnpm (ver "packageManager" em package.json e patches/ em
+# pnpm.patchedDependencies), então build/start usam pnpm, não npm.
+#
+# Depois do primeiro deploy, preencha DATABASE_URL manualmente no painel do
+# Render (Environment) — está marcada como "sync: false" de propósito, para
+# não guardar a credencial do Neon neste arquivo versionado no Git.
+services:
+  - type: web
+    name: gerenciamento-bolsistas-ufca
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+    startCommand: pnpm run start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
